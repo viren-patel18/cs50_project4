@@ -1,0 +1,157 @@
+<div class="posts">
+    <ul style="list-style-type: none; padding: 0;">
+        {% for post in page_obj %}
+            <li class="post-item card">
+                <div class="card-body">
+                    <input class="post-id" name="pk" type="hidden" value="{{ post.id }}">
+                <a style="font-weight: bold;" href="{% url 'profile' user_id=post.author.id %}">{{ post.author }}</a>
+                <small class="ts text-muted">{{ post.ts }}</small>
+                <div class="content">{{ post.content }}</div>
+                <div class="editing">
+                    <div class="edit-form form-group mt-1" style="display: none;">
+                        {% csrf_token %}
+                        <input class="edit-pk " name="pk" type="hidden" value="{{ post.id }}">
+                        <textarea class="edit-content form-control" name="content" rows="3" cols="100" required="True" placeholder="">{{ post.content }}</textarea>
+                        <button class="save btn btn-info btn-sm mt-1">Save</button>
+                        <!-- <input class="save"  type="submit" value="Save"> -->
+                    </div>
+                    {% if post.author == user %}
+            <!-- <a class="edit-link" href="#" style="display: {% if post.author == user %}block{% else %}none{% endif %};">Edit</a> -->
+                <svg class="heartFill bi bi-heart-fill" style="display: inline-block;" width="1em" height="1em" viewBox="0 0 16 16" fill="red" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                </svg>
+                <svg hidden class="heart bi bi-heart" style="display:none" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+                </svg>
+                <span class="like-count">{{ post.likedBy.all|length }}</span>
+                <a class="edit-link" href="#" style="font-size: 13px; color:gray">Edit</a>
+                <a class="like-link" href="#" hidden>Like</a>
+                {% else %}  
+                <svg class="heartFill bi bi-heart-fill" style="display:{% if user in post.likedBy.all %}inline-block{% else %}none{% endif %};" width="1em" height="1em" viewBox="0 0 16 16" fill="red" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
+                </svg>
+                <svg class="heart bi bi-heart" style="display:{% if user in post.likedBy.all %}none{% else %}inline-block{% endif %};" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z"/>
+                </svg>
+                <span class="like-count">{{ post.likedBy.all|length }}</span>
+                <a class="edit-link" href="#" hidden>Edit</a>
+                <a class="like-link" href="#">
+                    {% if user in post.likedBy.all %}Unlike{% else %}Like{% endif %}
+                </a>
+                {% endif %}
+                </div>
+                <!-- <button style="display:none;" id="save">Save</button> -->
+                </div>
+            </li>
+        {% empty %}
+            No Posts.
+        {% endfor %}
+    
+    </ul>
+        <!-- <div class="pagination">
+            
+        </div> -->
+        
+    <ul class="pagination" style="display: flex; flex-direction: row; justify-content: center;">
+        {% if page_obj.has_previous %}
+            <a class="page-link" href="?page=1">&laquo; First</a>
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}"> Previous </a>
+        {% endif %}
+        
+        {% for page in page_range %}
+            <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+        {% endif %}
+    </ul>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        edit_links = document.querySelectorAll('.edit-link');
+        like_links = document.querySelectorAll(".like-link");
+        heart_fill = document.querySelectorAll(".heartFill");
+        heart = document.querySelectorAll(".heart");
+        content = document.querySelectorAll('.content');
+        edit_pk = document.querySelectorAll('.edit-pk');
+        edit_content = document.querySelectorAll('.edit-content');
+        edit_form = document.querySelectorAll('.edit-form');
+        save = document.querySelectorAll('.save');
+        console.log(edit_links); // test
+        post_id = document.querySelectorAll('.post-id');
+
+        for(let i = 0; i < like_links.length; i++){
+            like_links[i].addEventListener('click', () => {
+                console.log(`/like/${post_id[i].value}`);
+                fetch(`/like/${post_id[i].value}`, {
+                    method: 'PUT'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    liked = result['liked'];
+                    if(liked == "1"){
+                        like_links[i].innerHTML = "Unlike";
+                        heart[i].style.display = "none";
+                        heart_fill[i].style.display = "inline-block";
+                        console.log(heart);
+                    }else{
+                        like_links[i].innerHTML = "Like";
+                        console.log(heart);
+                        heart[i].style.display = "inline-block";
+                        heart_fill[i].style.display = "none";
+                    };
+                    document.querySelectorAll(".like-count")[i].innerHTML = result['postLikes'];
+                })
+                .catch(error => {
+                        console.log("Error: ", error);
+                })
+            })
+        };
+
+        for(let i = 0; i < edit_links.length; i++){
+            edit_links[i].addEventListener('click', () => {
+                
+               if(edit_links[i].innerHTML == 'Edit'){
+                content[i].style.display = 'none';
+                edit_form   [i].style.display = 'block';
+                edit_links[i].innerHTML = "Cancel";
+
+                save[i].addEventListener('click', () => {
+                    console.log(edit_content[i].value);
+                    fetch(`/update/${edit_pk[i].value}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({
+                            content: edit_content[i].value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(result => {  
+                        console.log('result')
+                        console.log(result);
+                        content[i].innerHTML = edit_content[i].value;
+                        content[i].style.display = 'block';
+                        edit_form[i].style.display = 'none';
+                        edit_links[i].innerHTML = "Edit";
+                    })
+                    .catch(error => {
+                        console.log("Error: ", error);
+                    });
+                    console.log('after fetch');
+                })
+               } else {
+                content[i].style.display = 'block';
+                edit_form[i].style.display = 'none';
+                edit_links[i].innerHTML = "Edit";
+               }
+            })
+        }
+
+
+    });
+
+</script>

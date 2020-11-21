@@ -1,0 +1,38 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container">
+        <div class="profile_details">
+            <div id="user_id" hidden>{{ profile_user.id }}</div>
+            <div id="username" style="font-size: 2rem; color: blueviolet;">{{ profile_user.username }}</div>
+            <div id="followerCount">Followers: {{ profile_user.followers.all|length }}</div>
+            <div id="followingCount">Following: {{ profile_user.followers.all|length }}</div>
+            {% if user.is_authenticated and user.id != profile_user.id %}
+                <button id="follow" class="btn btn-info btn-sm mt-1">{% if profile_user in user.following.all %}Unfollow{% else %}Follow{% endif %}</button>
+            {% endif %}
+        </div><br>
+        {% include 'network/post.html' %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            button = document.querySelector('#follow');
+            button.addEventListener('click', () => {
+                id = document.querySelector('#user_id');
+                fetch(`/profile/${id.innerHTML}`, {
+                    method: 'PUT'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    added = result['following'];
+                    if(added == "1"){
+                        button.innerHTML = "Unfollow";
+                    }else{  
+                        button.innerHTML = "Follow";
+                    };
+                    document.querySelector("#followerCount").innerHTML = "Followers: " + result['followerCount'];
+                })
+            })
+        })
+    </script>
+{% endblock %}
